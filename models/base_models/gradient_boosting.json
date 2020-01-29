@@ -1,0 +1,10 @@
+{
+  "n_estimators": 3000,
+  "learning_rate": 0.05,
+  "max_depth": 4,
+  "max_features": "sqrt",
+  "min_samples_leaf": 15,
+  "min_samples_split": 10,
+  "loss": "huber",
+  "random_state": 5
+}

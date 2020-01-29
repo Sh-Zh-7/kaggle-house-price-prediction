@@ -1,0 +1,6 @@
+{
+  "alpha": 0.6,
+  "kernel": "polynomial",
+  "degree": 2,
+  "coef0": 2.5
+}
