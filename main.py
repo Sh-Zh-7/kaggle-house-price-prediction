@@ -1,9 +1,10 @@
-from sklearn.preprocessing import MinMaxScaler, RobustScaler
+from sklearn.preprocessing import StandardScaler, RobustScaler
 from sklearn.base import BaseEstimator, TransformerMixin, RegressorMixin, clone
 from sklearn.linear_model import LinearRegression, ElasticNet, Lasso
 from sklearn.kernel_ridge import KernelRidge
 from sklearn.ensemble import GradientBoostingRegressor
-from sklearn.model_selection import StratifiedKFold
+from sklearn.pipeline import make_pipeline
+from sklearn.model_selection import KFold
 import xgboost
 
 from utils import *
@@ -23,10 +24,12 @@ class StackingAverageModel(BaseEstimator, TransformerMixin, RegressorMixin):
 
     def fit(self, X, y):
         """ Fit the X and y by using out-of-fold prediction """
-        skf = StratifiedKFold(n_splits=self.n_fold, shuffle=True, random_state=SEED)
+        # We always use stratified-k-fold in classification tasks
+        # In regression tasks, we just simply use k-fold
+        kf = KFold(n_splits=self.n_fold, shuffle=True, random_state=SEED)
         out_of_fold_prediction = np.zeros((X.shape[0], len(self.base_models)))
         for i, base_model in enumerate(self.base_models):
-            for j, (train_index, test_index) in enumerate(skf.split(X, y)):
+            for j, (train_index, test_index) in enumerate(kf.split(X, y)):
                 model = self.base_models_clone[i][j]
                 model.fit(X[train_index], y[train_index])
                 out_of_fold_prediction[test_index, i] = model.predict(X[test_index])
@@ -57,14 +60,14 @@ def FeatureEngineering(df_data_set: pd.DataFrame):
     categorical_features = df_data_set.select_dtypes(exclude=["int64", "float64"]).columns
     # For all the numerical features, do min-max normalization
     # For all the categorical features, do dummy coding
-    df_data_set[numerical_features] = MinMaxScaler().fit_transform(df_data_set[numerical_features])
+    df_data_set[numerical_features] = StandardScaler().fit_transform(df_data_set[numerical_features])
     df_data_set = GetDummies(df_data_set, categorical_features)
 
     return DivideDF(df_data_set)
 
 def LoadModels(path):
     """ Load base models and meta model for model ensemble """
-    # Get all base models
+    # Get base models that need hyper-parameters
     base_models = []
     base_model_dir = os.path.join(path, "base_models")
     base_models_name = ["elastic_net", "gradient_boosting", "kernel_ridge", "lasso"]
@@ -73,6 +76,9 @@ def LoadModels(path):
         base_model_file = base_model + ".json"
         base_model = cntr(**Params(os.path.join(base_model_dir, base_model_file)).dict)
         base_models.append(base_model)
+    # Get base models without hyper-parameters
+    lr = make_pipeline(RobustScaler(), LinearRegression())
+    base_models.append(lr)
     # Get the meta model
     meta_model_path = os.path.join(path, "meta_model/xgboost.json")
     meta_model = xgboost.XGBRegressor(**Params(meta_model_path).dict)
@@ -104,14 +110,6 @@ if __name__ == "__main__":
     train_X, test_X = FeatureEngineering(df_all)
     train_X = train_X.values
     test_X = test_X.values
-
-    # # Detect missing values
-    # # for column in df_train_set.columns:
-    # for column in df_train_set.columns:
-    #     missing_line_count = df_train_set[column].isnull().sum()
-    #     if missing_line_count != 0:
-    #         print(column)
-    #         print(df_train_set[column][df_train_set[column].isnull().values])
 
     # Machine learning
     # There is no train_test split, because we can get score directly form lb
