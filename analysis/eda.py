@@ -20,11 +20,9 @@ if __name__ == "__main__":
     df_train_set["SalePrice"] = np.log1p(df_train_set["SalePrice"])
     # The distribution of target variable
     sns.distplot(df_train_set["SalePrice"], fit=norm)
-    plt.show()
     plt.savefig("./analysis/target_dist_plot.png")
     # The PP plot of target variable
     stats.probplot(df_train_set["SalePrice"], plot=plt)
-    plt.show()
     plt.savefig("./analysis/target_PP_plot.png")
 
     # Check
