@@ -79,7 +79,7 @@ def LoadModels(path):
     for base_model, cntr in zip(sp_base_models_name, sp_base_models_cntr):
         base_model_file = base_model + ".json"
         base_model = cntr(**Params(os.path.join(base_model_dir, base_model_file)).dict)
-        base_model = make_pipeline(RobustScaler(), base_model)
+        base_model = base_model
         base_models.append(base_model)
     # Secondly deal with normal models
     base_models_name = ["gradient_boosting", "kernel_ridge", "lightgbm"]
