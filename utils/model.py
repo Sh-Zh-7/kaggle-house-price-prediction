@@ -9,6 +9,7 @@ from sklearn.pipeline import make_pipeline
 from sklearn.model_selection import KFold
 from sklearn.externals import joblib
 import xgboost
+import lightgbm
 
 from helper import *
 
@@ -20,7 +21,7 @@ class StackingAverageModel(BaseEstimator, TransformerMixin, RegressorMixin):
         self.base_models = base_models
         # The clone here is only for pretending data leakage
         self.base_models_clone = [[clone(base_model)] * n_fold for base_model in base_models]
-        self.base_models_name = ["elastic_net", "gradient_boosting", "kernel_ridge", "lasso", "lr"]
+        self.base_models_name = ["elastic_net", "gradient_boosting", "light_bgm", "kernel_ridge", "lasso", "lr"]
 
         self.meta_model = meta_model
         self.meta_model_name = "xgboost"
@@ -69,16 +70,25 @@ class StackingAverageModel(BaseEstimator, TransformerMixin, RegressorMixin):
 
 def LoadModels(path):
     """ Load base models and meta model for model ensemble """
-    # Get base models that need hyper-parameters
+    # Get base models
     base_models = []
     base_model_dir = os.path.join(path, "base_models")
-    base_models_name = ["elastic_net", "gradient_boosting", "kernel_ridge", "lasso"]
-    base_models_cntr = [ElasticNet, GradientBoostingRegressor, KernelRidge, Lasso]
+    # Firstly deal with models are sensitive to outliers
+    sp_base_models_name = ["elastic_net", "lasso"]
+    sp_base_models_cntr = [ElasticNet, Lasso]
+    for base_model, cntr in zip(sp_base_models_name, sp_base_models_cntr):
+        base_model_file = base_model + ".json"
+        base_model = cntr(**Params(os.path.join(base_model_dir, base_model_file)).dict)
+        base_model = make_pipeline(RobustScaler(), base_model)
+        base_models.append(base_model)
+    # Secondly deal with normal models
+    base_models_name = ["gradient_boosting", "kernel_ridge", "lightgbm"]
+    base_models_cntr = [GradientBoostingRegressor, KernelRidge, lightgbm.LGBMRegressor]
     for base_model, cntr in zip(base_models_name, base_models_cntr):
         base_model_file = base_model + ".json"
         base_model = cntr(**Params(os.path.join(base_model_dir, base_model_file)).dict)
         base_models.append(base_model)
-    # Get base models without hyper-parameters
+    # Finally deal with models without hyper-parameters
     lr = LinearRegression()
     base_models.append(lr)
     # Get the meta model
