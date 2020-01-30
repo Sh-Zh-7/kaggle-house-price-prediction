@@ -37,11 +37,11 @@ if __name__ == "__main__":
     result = np.expm1(stacking_model.predict(test_X))
     print("Done.")
 
-    # Save parameters and throw them to the back-end
-    stacking_model.save_params("./models")
+    # # Save parameters and throw them to the back-end
+    # stacking_model.save_params("./models")
 
     # # Output
     print("Writing to csv..")
-    # output = pd.DataFrame({"Id": range(1461, 2920), "SalePrice": result})
-    # output.to_csv("./result.csv", index=False)
+    output = pd.DataFrame({"Id": range(1461, 2920), "SalePrice": result})
+    output.to_csv("./result.csv", index=False)
     print("Done!")

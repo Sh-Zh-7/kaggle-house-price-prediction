@@ -79,7 +79,7 @@ def LoadModels(path):
         base_model = cntr(**Params(os.path.join(base_model_dir, base_model_file)).dict)
         base_models.append(base_model)
     # Get base models without hyper-parameters
-    lr = make_pipeline(RobustScaler(), LinearRegression())
+    lr = LinearRegression()
     base_models.append(lr)
     # Get the meta model
     meta_model_path = os.path.join(path, "meta_model/xgboost.json")
