@@ -1,14 +1,13 @@
 import os
 import json
+from abc import ABC
 
-import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
 
 from tabulate import tabulate
 
 class Params:
+    """ Load models's hyper parameters """
     def __init__(self, path):
         with open(path, "r") as f:
             self.__dict__.update(json.load(f))
@@ -106,3 +105,8 @@ def Save2Markdown(data_set, dir_path):
             table = tabulate(info_value, headers="keys", tablefmt="pipe")
             f.write(table)
             f.write("\n\n")
+
+def CheckAndMakeDir(path):
+    if not os.path.exists(path):
+        print("The {} doesn't exist! Make a new directory!".format(path))
+        os.makedirs(path)
