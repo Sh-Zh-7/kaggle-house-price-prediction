@@ -1,4 +1,4 @@
-from sklearn.preprocessing import StandardScaler, RobustScaler
+from sklearn.preprocessing import RobustScaler
 from sklearn.base import BaseEstimator, TransformerMixin, RegressorMixin, clone
 from sklearn.linear_model import LinearRegression, ElasticNet, Lasso
 from sklearn.kernel_ridge import KernelRidge
@@ -8,6 +8,7 @@ from sklearn.model_selection import KFold
 import xgboost
 
 from utils import *
+from feat_eng import FeatureEngineering
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -43,28 +44,6 @@ class StackingAverageModel(BaseEstimator, TransformerMixin, RegressorMixin):
         )
         return self.meta_model.predict(meta_features)
 
-# Press Ctrl+- to hide the detail of the functions
-def GetDummies(data_set, categorical_features):
-    """ Reserve the origin attribute while getting dummies """
-    reserve_name = data_set.name
-    reserve_trn_len = data_set.trn_len
-    data_set = pd.get_dummies(data_set, columns=categorical_features, drop_first=True)
-    data_set.name = reserve_name
-    data_set.trn_len = reserve_trn_len
-    return data_set
-
-def FeatureEngineering(df_data_set: pd.DataFrame):
-    """ As its name suggests, do feature engineering """
-    # Get numerical and categorical features
-    numerical_features = df_data_set.select_dtypes(include=["int64", "float64"]).columns
-    categorical_features = df_data_set.select_dtypes(exclude=["int64", "float64"]).columns
-    # For all the numerical features, do min-max normalization
-    # For all the categorical features, do dummy coding
-    df_data_set[numerical_features] = StandardScaler().fit_transform(df_data_set[numerical_features])
-    df_data_set = GetDummies(df_data_set, categorical_features)
-
-    return DivideDF(df_data_set)
-
 def LoadModels(path):
     """ Load base models and meta model for model ensemble """
     # Get base models that need hyper-parameters
@@ -85,38 +64,31 @@ def LoadModels(path):
 
     return base_models, meta_model
 
-
 if __name__ == "__main__":
-    # Get data set
+    # Get test set, train set and its target values
     df_train_set, df_test_set = GetDataSet("./data")
-
-    # # Save information to markdown files
-    # Save2Markdown(df_train_set, "./analysis")
-    # Save2Markdown(df_test_set, "./analysis")
+    train_y = df_train_set["SalePrice"].values
+    df_train_set.drop("SalePrice", axis=1, inplace=True)
 
     # Deal with missing values
     DealWithMissingValues(df_train_set)
     DealWithMissingValues(df_test_set)
 
-    # Create df_all to create format features
-    train_y = df_train_set["SalePrice"].values
-    df_train_set.drop("SalePrice", axis=1, inplace=True)
-    df_all = ConcatDF(df_train_set, df_test_set)
-    df_all.name = "all"
-
     # Feature engineering
     # Honestly speaking, there is no need to return y for FE
     # Remember to convert it to numpy object
-    train_X, test_X = FeatureEngineering(df_all)
-    train_X = train_X.values
-    test_X = test_X.values
+    train_X, test_X = FeatureEngineering(df_train_set, df_test_set)
+
+    # Target engineering
+    # Don't forget to convert to original at the end
+    train_y = np.log1p(train_y)
 
     # Machine learning
     # There is no train_test split, because we can get score directly form lb
     base_models, meta_model = LoadModels("./models")
     stacking_model = StackingAverageModel(base_models, meta_model)
     stacking_model.fit(train_X, train_y)
-    result = stacking_model.predict(test_X)
+    result = np.expm1(stacking_model.predict(test_X))
 
     # Output
     output = pd.DataFrame({"Id": range(1461, 2920), "SalePrice": result})

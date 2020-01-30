@@ -25,6 +25,16 @@ class Params:
     def dict(self):
         return self.__dict__
 
+# Press Ctrl+- to hide the detail of the functions
+def GetDummies(data_set, categorical_features):
+    """ Reserve the origin attribute while getting dummies """
+    reserve_name = data_set.name
+    reserve_trn_len = data_set.trn_len
+    data_set = pd.get_dummies(data_set, columns=categorical_features, drop_first=True)
+    data_set.name = reserve_name
+    data_set.trn_len = reserve_trn_len
+    return data_set
+
 def ConcatDF(train_set, test_set):
     """
     Concatenate train set and test set,
