@@ -1,11 +1,11 @@
 import numpy as np
 
-from utils import *
-import model
-from feat_eng import FeatureEngineering
+from utils.helper import *
+import utils.model as model
+from utils.feat_eng import FeatureEngineering
+
 import warnings
 warnings.filterwarnings("ignore")
-
 
 if __name__ == "__main__":
     # Get test set, train set and its target values
