@@ -12,9 +12,9 @@ Although many of people have finished watching get-started video like Andrew ng'
 Let's make an overview of this project:
 
 1. **./analysis**: Store the eda visualization result.
-2. **./data:** Store the data set.
-3. ./img: different from ./analysis. This folder's images is for README doc.
-4. ./models: Store all models' hyper parameters and parameters. (After you run this script, you can see a new folder named checkpoint in this directory.  This is where to store the parameters)
+2. **./data**: Store the data set.
+3. **./img**: different from ./analysis. This folder's images is for README doc.
+4. **./models**: Store all models' hyper parameters and parameters. (After you run this script, you can see a new folder named checkpoint in this directory.  This is where to store the parameters)
 5. **./utils**: Store all the necessary helper script in this project. Such as feature engineering and modeling.
 6. **main.py**: The whole process of the machine learning.
 7. **result.csv**: The submission file of this competition.
