@@ -5,8 +5,6 @@ Although many of people have finished watching get-started video like Andrew ng'
 
 # Project Structure
 
-
-
 ![project_struct](./assets/project_struct.png)
 
 Let's make an overview of this project:
@@ -18,6 +16,17 @@ Let's make an overview of this project:
 5. **./utils**: Store all the necessary helper script in this project. Such as feature engineering and modeling.
 6. **main.py**: The whole process of the machine learning.
 7. **result.csv**: The submission file of this competition.
+
+# Build
+We recommend using python3 and a virtual env. See instructions here.
+
+```bash
+virtualenv -p python3 .env
+source .env/bin/activate
+pip install -r requirements.txt
+```
+
+When you're done working on the project, deactivate the virtual environment with deactivate.
 
 # Process
 
