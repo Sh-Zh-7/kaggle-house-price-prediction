@@ -1,13 +1,13 @@
 # kaggle-house-price-prediction
 Although many of people have finished watching get-started video like Andrew ng's machine learning introduction on coursa. They still don't know what to do when competition. This repo is a brief introduction to what you should do when competition.
 
-![title](./img/title.png)
+![title](./assets/title.png)
 
 # Project Structure
 
 
 
-![project_struct](./img/project_struct.png)
+![project_struct](./assets/project_struct.png)
 
 Let's make an overview of this project:
 
